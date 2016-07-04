@@ -16,5 +16,18 @@ fonts <- lapply(list.files("./fonts/png/"), function(single_file) {
   img <- readImage(paste0("./fonts/png/", single_file))
   slot(img, ".Data")[, , 1]
 })
-  
+
 names(fonts) <- paste0("f_", unlist(strsplit(list.files("./fonts/png/"), ".png", fixed = TRUE)))
+
+# read image -------------------------------------------------------
+
+read_VideoScan <- function(file) {
+  output_file <- paste0(tempfile(tmpdir = getwd()), ".png")
+  im_cmd <- paste0('convert ', file, ' -channel rgba -alpha set -fuzz 10% -fill none -opaque "#ff42ff" -write mpr:orig +delete mpr:orig -channel rgba -alpha set -fuzz 10% -fill none -opaque "#ff68ff" -write mpr:orig +delete mpr:orig -channel R -separate -crop 350x10+110+27\\! ', output_file)
+  system(im_cmd)
+  img <- readImage(output_file)
+  unlink(output_file)
+  slot(img, ".Data")
+}
+
+read_VideoScan("/home/michal/Dropbox/Zdjecia/Img_B2_000_Composed.bmp")
