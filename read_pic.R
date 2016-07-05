@@ -108,5 +108,4 @@ res <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
 ))
   
-
-
+write.csv(res, file = "first_readout.csv", quote = FALSE, row.names = FALSE)
