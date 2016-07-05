@@ -23,15 +23,17 @@ get_fonts <- function(fonts_directory) {
   
   # 1 is not properly save, need to add one row
   fonts[[2]] <- rbind(0, fonts[[2]])
-  lapply(fonts, function(i) 
+  fonts_final <- lapply(fonts, function(i) 
     which(i == 1))
+  fonts_final[[2]] <- fonts_final[[2]] - 1
+  fonts_final
 }
 
 # read image -------------------------------------------------------
 
 read_VideoScan <- function(file) {
   output_file <- paste0(tempfile(tmpdir = getwd()), ".png")
-  im_cmd <- paste0('convert ', file, ' -channel rgba -alpha set -fuzz 10% -fill none -opaque "#ff42ff" -write mpr:orig +delete mpr:orig -channel rgba -alpha set -fuzz 10% -fill none -opaque "#ff68ff" -write mpr:orig +delete mpr:orig -channel R -separate -crop 360x7+118+28\\! ', output_file)
+  im_cmd <- paste0('convert ', file, ' -fuzz 10% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28\\! ', output_file)
   system(im_cmd)
   img <- readImage(output_file)
   unlink(output_file)
@@ -104,8 +106,21 @@ process_VideoScan <- function(img_name, thr = 0.8) {
 
 fonts_VD <- get_fonts("./fonts/png/")
 
-res <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
+res08 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
 ))
   
-write.csv(res, file = "first_readout.csv", quote = FALSE, row.names = FALSE)
+
+res05 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
+  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5)
+)) 
+
+write.csv(res08, file = "first_readout_08.csv", quote = FALSE, row.names = FALSE)
+write.csv(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
+
+# strsplit(res05[, 2], "") %>% unlist %>% table
+
+# tmp <- paste0("/home/michal/Dropbox/Zdjecia/", "Img_B2_003_Composed.bmp") %>% 
+#   read_VideoScan() %>% 
+#   get_characters() 
+
