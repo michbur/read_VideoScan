@@ -143,5 +143,5 @@ res05 <- t(sapply(images, function(i)
   data.frame() %>% 
   mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
 
-write.csv(res09, file = "first_readout_09.csv", quote = FALSE, row.names = FALSE)
-write.csv(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
+write.csv2(res09, file = "first_readout_09.csv", quote = FALSE, row.names = FALSE)
+write.csv2(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
