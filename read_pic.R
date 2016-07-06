@@ -113,10 +113,10 @@ read_characters <- function(x) {
 
 # process whole VideoScan image -----------------------------
 
-process_VideoScan <- function(img_name, thr = 0.9) {
+process_VideoScan <- function(img_name, thr = 0.9, fonts = fonts_VD) {
   img_dat <- read_VideoScan(img_name) %>% 
     get_characters() %>% 
-    identify_characters(fonts = fonts_VD) %>% 
+    identify_characters(fonts = fonts) %>% 
     read_characters() %>% 
     group_by(type) %>% 
     mutate(final = ifelse(conf > thr, as.character(readout), "X"))
@@ -127,20 +127,18 @@ process_VideoScan <- function(img_name, thr = 0.9) {
   ) 
 }
 
-
-
 fonts_VD <- get_fonts("./fonts/png/")
 
 images <- list.files("/home/michal/Dropbox/Zdjecia/")[grep(".bmp", list.files("/home/michal/Dropbox/Zdjecia/"))]
 
 res09 <- t(sapply(images, function(i)
-  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
+  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), fonts = fonts_VD)
 )) %>% 
   data.frame() %>% 
   mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
 
 res05 <- t(sapply(images, function(i)
-  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5)
+  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5, fonts = fonts_VD)
 )) %>% 
   data.frame() %>% 
   mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
