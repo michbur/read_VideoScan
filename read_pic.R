@@ -113,7 +113,7 @@ read_characters <- function(x) {
 
 # process whole VideoScan image -----------------------------
 
-process_VideoScan <- function(img_name, thr = 0.8) {
+process_VideoScan <- function(img_name, thr = 0.9) {
   img_dat <- read_VideoScan(img_name) %>% 
     get_characters() %>% 
     identify_characters(fonts = fonts_VD) %>% 
@@ -131,7 +131,7 @@ process_VideoScan <- function(img_name, thr = 0.8) {
 
 fonts_VD <- get_fonts("./fonts/png/")
 
-res08 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
+res09 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
 ))
 
@@ -140,7 +140,7 @@ res05 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5)
 )) 
 
-write.csv(res08, file = "first_readout_08.csv", quote = FALSE, row.names = FALSE)
+write.csv(res09, file = "first_readout_09.csv", quote = FALSE, row.names = FALSE)
 write.csv(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
 
 # strsplit(res05[, 2], "") %>% unlist %>% table
