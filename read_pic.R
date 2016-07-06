@@ -129,16 +129,15 @@ process_VideoScan <- function(img_name, thr = 0.9, fonts = fonts_VD) {
 
 fonts_VD <- get_fonts("./fonts/png/")
 
-images <- list.files("/home/michal/Dropbox/Zdjecia/")[grep(".bmp", list.files("/home/michal/Dropbox/Zdjecia/"))]
 
-res09 <- t(sapply(images, function(i)
-  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), fonts = fonts_VD)
-)) %>% 
-  data.frame() %>% 
-  mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
+pathway <- "C:/Users/Michal/Dropbox/Zdjecia"
 
-res05 <- t(sapply(images, function(i)
-  process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5, fonts = fonts_VD)
+
+images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
+
+
+res <- t(sapply(images_names, function(i)
+  process_VideoScan(paste0(pathway, i), thr = 0.5, fonts = fonts_VD)
 )) %>% 
   data.frame() %>% 
   mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
