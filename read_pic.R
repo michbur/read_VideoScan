@@ -124,33 +124,26 @@ process_VideoScan <- function(img_name, thr = 0.9) {
   c(name = img_name,
     number1 = paste0(filter(img_dat, type == "number1")[["final"]], collapse = ""),
     number2 = paste0(filter(img_dat, type == "number2")[["final"]], collapse = "")
-  )
+  ) 
 }
 
 
 
 fonts_VD <- get_fonts("./fonts/png/")
 
-res09 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
+images <- list.files("/home/michal/Dropbox/Zdjecia/")[grep(".bmp", list.files("/home/michal/Dropbox/Zdjecia/"))]
+
+res09 <- t(sapply(images, function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
-))
+)) %>% 
+  data.frame() %>% 
+  mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
 
-
-res05 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
+res05 <- t(sapply(images, function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5)
-)) 
+)) %>% 
+  data.frame() %>% 
+  mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
 
 write.csv(res09, file = "first_readout_09.csv", quote = FALSE, row.names = FALSE)
 write.csv(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
-
-# strsplit(res05[, 2], "") %>% unlist %>% table
-
-tmp <- paste0("/home/michal/Dropbox/Zdjecia/", "Img_B2_002_Composed.bmp") %>%
-  read_VideoScan() %>%
-  get_characters() %>% 
-  identify_characters(fonts = fonts_VD) %>% 
-  read_characters() 
-
-
-
-
