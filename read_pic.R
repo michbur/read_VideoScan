@@ -31,13 +31,30 @@ get_fonts <- function(fonts_directory) {
 
 # read image -------------------------------------------------------
 
-read_VideoScan <- function(file) {
+# read characters or noise
+read_VideoScan_single <- function(file, what = "char") {
   output_file <- paste0(tempfile(tmpdir = getwd()), ".png")
-  im_cmd <- paste0('convert ', file, ' -fuzz 10% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28\\! ', output_file)
+  if(what == "char")
+    im_cmd <- paste0('convert ', 
+                     file, 
+                     ' -fuzz 20% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28\\! ', 
+                     output_file)
+  
+  if(what == "noise")
+    im_cmd <- paste0('convert ', 
+                     file, 
+                     ' -fuzz 10% -fill white -opaque "#ff39ff" -threshold 99.99% -crop 360x7+118+28\\! ', 
+                     output_file)
+  
   system(im_cmd)
   img <- readImage(output_file)
   unlink(output_file)
   slot(img, ".Data")
+}
+
+
+read_VideoScan <- function(file) {
+  read_VideoScan_single(file, what = "char")- read_VideoScan_single(file, what = "noise")
 }
 
 # extract characters from image ----------------------------------
@@ -48,18 +65,27 @@ get_characters <- function(x) {
   lapply(1L:nrow(char_pos), function(pos_id) {
     # start and end of a character
     char_se <- char_pos[pos_id, ]
-    which(x[char_se[1]:char_se[2], ] == 1)
+    list(char = which(x[char_se[1]:char_se[2], ] == 1),
+         noise = which(x[char_se[1]:char_se[2], ] == -1)
+    )
   })
 }
 
 # identify characters by comparing them to pattern --------------
 
 identify_characters <- function(x, fonts)
-  sapply(fonts[1L:10], function(single_font)
-    sapply(x, function(single_img)
-      mean(single_font %in% single_img)
-    )
-  ) 
+  sapply(fonts[1L:10], function(single_font) 
+    sapply(x, function(single_img) {
+      clear_read <- length(intersect(single_img[["char"]], single_font))
+      exceeding_font <- length(setdiff(single_img[["char"]], single_font))
+      if(clear_read == 0 | exceeding_font > 0) {
+        0
+      } else {
+        maybe_noise <- length(intersect(setdiff(single_font, single_img[["char"]]), single_img[["noise"]]))
+        (clear_read + maybe_noise)/length(single_font)
+      }
+    })
+  )
 
 # get character and its confidence ------------------------------
 
@@ -79,8 +105,7 @@ get_readout <- function(x, indices) {
 # we treat leftBracket as space, it's id is spaces[1] + 1
 
 read_characters <- function(x) {
-  spaces <- which(rowSums(x) == 0)[1L:2]
-  
+  spaces <- which(rowSums(x) == 0)[c(1, 3)]
   rbind(data.frame(type = "number1", get_readout(x, 1:(spaces[1] - 1))),
         data.frame(type = "number2", get_readout(x, (spaces[1] + 2):(spaces[2] - 1)))
   )
@@ -109,7 +134,7 @@ fonts_VD <- get_fonts("./fonts/png/")
 res08 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i))
 ))
-  
+
 
 res05 <- t(sapply(list.files("/home/michal/Dropbox/Zdjecia/"), function(i)
   process_VideoScan(paste0("/home/michal/Dropbox/Zdjecia/", i), 0.5)
@@ -120,7 +145,12 @@ write.csv(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE
 
 # strsplit(res05[, 2], "") %>% unlist %>% table
 
-# tmp <- paste0("/home/michal/Dropbox/Zdjecia/", "Img_B2_003_Composed.bmp") %>% 
-#   read_VideoScan() %>% 
-#   get_characters() 
+tmp <- paste0("/home/michal/Dropbox/Zdjecia/", "Img_B2_002_Composed.bmp") %>%
+  read_VideoScan() %>%
+  get_characters() %>% 
+  identify_characters(fonts = fonts_VD) %>% 
+  read_characters() 
+
+
+
 
