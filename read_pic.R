@@ -113,7 +113,7 @@ read_characters <- function(x) {
 
 # process whole VideoScan image -----------------------------
 
-process_VideoScan <- function(img_name, thr = 0.9, fonts = fonts_VD) {
+process_VideoScan_image <- function(img_name, thr = 0.9, fonts = fonts_VD) {
   img_dat <- read_VideoScan(img_name) %>% 
     get_characters() %>% 
     identify_characters(fonts = fonts) %>% 
@@ -121,26 +121,36 @@ process_VideoScan <- function(img_name, thr = 0.9, fonts = fonts_VD) {
     group_by(type) %>% 
     mutate(final = ifelse(conf > thr, as.character(readout), "X"))
   
-  c(name = img_name,
+  c(path = img_name,
     number1 = paste0(filter(img_dat, type == "number1")[["final"]], collapse = ""),
     number2 = paste0(filter(img_dat, type == "number2")[["final"]], collapse = "")
   ) 
 }
 
+get_filename <- function(path) {
+  splitted_path <- strsplit(as.character(path), "/", fixed = TRUE)[[1]]
+  splitted_path[length(splitted_path)]
+}
+
 fonts_VD <- get_fonts("./fonts/png/")
 
 
-pathway <- "C:/Users/Michal/Dropbox/Zdjecia"
+process_VideoScan <- function(pathway, fonts = fonts_VD, thr = 0.5) {
+  images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
+  
+  readout <- t(sapply(images_names, function(i)
+    process_VideoScan_image(paste0(pathway, i), thr = thr, fonts = fonts)
+  )) %>% 
+    data.frame() %>% 
+    mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)),
+           doubt = ifelse(round(ratio, 4) == 0.1485, "", "doubtful"),
+           name = get_filename(path)) %>% 
+    select(name, number1, number2, ratio, doubt, path)
+  
+  doubtful_images <- paste0(filter(readout, doubt == "doubtful")[["name"]], collapse = ", ")
+  write.csv2(readout, file = paste0(pathway, "readout.csv"), quote = FALSE, row.names = FALSE)
+  message("Doubtful images: ", doubtful_images)
+  invisible(readout)
+}
 
-
-images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
-
-
-res <- t(sapply(images_names, function(i)
-  process_VideoScan(paste0(pathway, i), thr = 0.5, fonts = fonts_VD)
-)) %>% 
-  data.frame() %>% 
-  mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)))
-
-write.csv2(res09, file = "first_readout_09.csv", quote = FALSE, row.names = FALSE)
-write.csv2(res05, file = "first_readout_05.csv", quote = FALSE, row.names = FALSE)
+process_VideoScan("/home/michal/Dropbox/Zdjecia/", fonts_VD)
