@@ -33,10 +33,16 @@ get_fonts <- function(fonts_directory) {
 
 # read characters or noise
 read_VideoScan_single <- function(file, what = "char") {
-  output_file <- paste0(tempfile(tmpdir = getwd()), ".png")
+  
+  file_name <- tempfile(tmpdir = getwd())
+  input_file <- paste0(file_name, ".bmp")
+  output_file <- paste0(file_name, ".png")
+  
+  file.copy(file, input_file)
+  
   if(what == "char")
     im_cmd <- paste0('convert ', 
-                     file, 
+                     input_file, 
                      ' -fuzz 20% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28\\! ', 
                      output_file)
   
@@ -48,7 +54,7 @@ read_VideoScan_single <- function(file, what = "char") {
   
   system(im_cmd)
   img <- readImage(output_file)
-  unlink(output_file)
+  unlink(c(input_file, output_file))
   slot(img, ".Data")
 }
 
