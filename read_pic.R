@@ -152,4 +152,4 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   invisible(readout)
 }
 
-process_VideoScan("/home/michal/Dropbox/Zdjecia/")
+#process_VideoScan("/home/michal/Dropbox/Zdjecia/")
