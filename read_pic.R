@@ -5,6 +5,7 @@
 process_VideoScan <- function(pathway, thr = 0.5) {
   library(dplyr)
   library(EBImage)
+  library(pbapply)
   
   # read image -------------------------------------------------------
   
@@ -111,8 +112,9 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   }
   
   get_filename <- function(path) {
-    splitted_path <- strsplit(as.character(path), "/", fixed = TRUE)[[1]]
-    splitted_path[length(splitted_path)]
+    splitted_path <- strsplit(as.character(path), "/", fixed = TRUE)
+    sapply(splitted_path, function(i)
+      i[length(i)])
   }
   
   fonts_VD <- structure(list(f_0 = c(2L, 3L, 4L, 6L, 10L, 11L, 14L, 15L, 16L, 18L, 
@@ -137,7 +139,7 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   
   images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
   
-  readout <- t(sapply(images_names, function(i)
+  readout <- t(pbsapply(images_names, function(i)
     process_VideoScan_image(paste0(pathway, i), thr = thr, fonts = fonts_VD)
   )) %>% 
     data.frame() %>% 
@@ -152,4 +154,4 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   invisible(readout)
 }
 
-#process_VideoScan("/home/michal/Dropbox/Zdjecia/")
+process_VideoScan("/home/michal/Dropbox/Zdjecia/")
