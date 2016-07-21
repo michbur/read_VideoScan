@@ -2,7 +2,7 @@
 # numbers_space_leftBracket_numbers_space_stringA_rightBracket
 # stringA (parse ^2): objects/mm^2
 
-process_VideoScan <- function(pathway, thr = 0.5) {
+process_VideoScan <- function(pathway, thr = 0.5, convert_pathway = '"C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe"') {
   library(dplyr)
   library(EBImage)
   library(pbapply)
@@ -16,17 +16,16 @@ process_VideoScan <- function(pathway, thr = 0.5) {
     output_file <- tempfile(fileext = ".png")
     
     if(what == "char")
-      im_cmd <- paste0('"C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe" ', 
+      im_cmd <- paste0(convert_pathway, ' ', 
                        gsub("/", "\\\\", input_file), 
                        ' -fuzz 20% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28 ', 
                        output_file)
     
     if(what == "noise")
-      im_cmd <- paste0('"C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe" ', 
+      im_cmd <- paste0(convert_pathway, ' ', 
                        gsub("/", "\\\\", input_file), 
                        ' -fuzz 10% -fill white -opaque "#ff39ff" -threshold 99.99% -crop 360x7+118+28 ', 
                        output_file)
-    
 
     system(im_cmd)
     
@@ -137,6 +136,11 @@ process_VideoScan <- function(pathway, thr = 0.5) {
                         .Names = c("f_0", "f_1", "f_2", "f_3", "f_4", "f_5", "f_6", "f_7", "f_8", "f_9"))
   
   images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
+  
+  if(!file.exists("C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe")) {
+    stop('Podaj jak argument convert_pathway sciezke do pliku convert.exe w ImageMagick\n
+    U mnie to "C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe"')
+  }
   
   readout <- t(pbsapply(images_names, function(i)
     process_VideoScan_image(paste0(pathway, "/", i), thr = thr, fonts = fonts_VD)
