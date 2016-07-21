@@ -12,27 +12,26 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   # read characters or noise
   read_VideoScan_single <- function(file, what = "char") {
     
-    file_name <- tempfile(tmpdir = getwd())
-    input_file <- paste0(file_name, ".bmp")
-    output_file <- paste0(file_name, ".png")
-    
-    file.copy(file, input_file)
+    input_file <- file
+    output_file <- tempfile(fileext = ".png")
     
     if(what == "char")
-      im_cmd <- paste0('convert ', 
-                       input_file, 
-                       ' -fuzz 20% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28\\! ', 
+      im_cmd <- paste0('"C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe" ', 
+                       gsub("/", "\\\\", input_file), 
+                       ' -fuzz 20% -fill white -opaque "#ff0300" -threshold 99.99% -crop 360x7+118+28 ', 
                        output_file)
     
     if(what == "noise")
-      im_cmd <- paste0('convert ', 
-                       file, 
-                       ' -fuzz 10% -fill white -opaque "#ff39ff" -threshold 99.99% -crop 360x7+118+28\\! ', 
+      im_cmd <- paste0('"C:\\Program Files\\ImageMagick-7.0.2-Q16\\convert.exe" ', 
+                       gsub("/", "\\\\", input_file), 
+                       ' -fuzz 10% -fill white -opaque "#ff39ff" -threshold 99.99% -crop 360x7+118+28 ', 
                        output_file)
     
+
     system(im_cmd)
+    
     img <- readImage(output_file)
-    unlink(c(input_file, output_file))
+    unlink(output_file)
     slot(img, ".Data")
   }
   
@@ -140,7 +139,7 @@ process_VideoScan <- function(pathway, thr = 0.5) {
   images_names <- list.files(pathway)[grep(".bmp", list.files(pathway))]
   
   readout <- t(pbsapply(images_names, function(i)
-    process_VideoScan_image(paste0(pathway, i), thr = thr, fonts = fonts_VD)
+    process_VideoScan_image(paste0(pathway, "/", i), thr = thr, fonts = fonts_VD)
   )) %>% 
     data.frame() %>% 
     mutate(ratio = as.numeric(as.character(number1))/as.numeric(as.character(number2)),
@@ -149,9 +148,10 @@ process_VideoScan <- function(pathway, thr = 0.5) {
     select(name, number1, number2, ratio, doubt, path)
   
   doubtful_images <- paste0(filter(readout, doubt == "doubtful")[["name"]], collapse = ", ")
-  write.csv2(readout, file = paste0(pathway, "readout.csv"), quote = FALSE, row.names = FALSE)
+  write.csv2(readout, file = paste0(pathway, "/readout.csv"), quote = FALSE, row.names = FALSE)
   message("Doubtful images: ", doubtful_images)
   invisible(readout)
 }
 
 #process_VideoScan("/home/michal/Dropbox/Zdjecia/")
+#process_VideoScan("C:/Users/Michal/Dropbox/Zdjecia")
